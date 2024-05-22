@@ -8,17 +8,20 @@ import {
   TouchableOpacity,
   FlatList,
 } from "react-native";
-import { addFavoriteCharacter, fetchEpisodeDetails } from "../services/api";
+import { addToFavorites } from "../redux/features/favorite/favoriteSlice";
+import { useDispatch } from "react-redux";
+import { fetchEpisodeDetails } from "../services/api";
 
 const CharacterScreen = ({ route }) => {
+  const dispatch = useDispatch();
   const { character } = route.params;
   const [episodes, setEpisodes] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchEpisodes = async () => {
-      const characterApperendEpisodes = await fetchEpisodeDetails(character);
-      setEpisodes(characterApperendEpisodes);
+      const characterAppearedEpisodes = await fetchEpisodeDetails(character);
+      setEpisodes(characterAppearedEpisodes);
     };
     setLoading(false);
     fetchEpisodes();
@@ -28,9 +31,9 @@ const CharacterScreen = ({ route }) => {
     return <ActivityIndicator size="large" color="#0000ff" />;
   }
 
-  const addToFavorites = async (character) => {
+  const handleAddToFavorites = (character) => {
     try {
-      await addFavoriteCharacter(character);
+      dispatch(addToFavorites(character));
     } catch (error) {
       console.error("Error adding character to favorites:", error);
     }
@@ -41,7 +44,7 @@ const CharacterScreen = ({ route }) => {
       <View style={styles.card}>
         <TouchableOpacity
           style={styles.favoriteButton}
-          onPress={() => addToFavorites(character)}
+          onPress={() => handleAddToFavorites(character)}
         >
           <Text style={{ fontSize: 30 }}>⭐</Text>
         </TouchableOpacity>

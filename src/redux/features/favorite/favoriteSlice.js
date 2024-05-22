@@ -1,29 +1,57 @@
 import { createSlice } from "@reduxjs/toolkit";
-import {
-  removeFavoriteCharacter,
-  addFavoriteCharacter,
-} from "../../../services/api";
+import { Alert } from "react-native";
 
 const initialState = {
   favorites: [],
 };
 
-const favoriteSlice = createSlice({
-  name: "favorite",
+export const favoritesSlice = createSlice({
+  name: "favorites",
   initialState,
   reducers: {
-    addToFavorites: async (state, action) => {
+    addToFavorites: (state, action) => {
+      const character = action.payload;
+
+      if (state.favorites.some((item) => item.id === character.id)) {
+        Alert.alert("This character is already in your favorites list.");
+        return;
+      }
+
+      if (state.favorites.length >= 10) {
+        Alert.alert(
+          "Favori karakter ekleme sayısını aştınız.",
+          "Başka bir karakteri favorilerden çıkarmalısınız."
+        );
+        return;
+      }
       state.favorites.push(action.payload);
-      await addFavoriteCharacter(state.favorites);
+      Alert.alert("Success", "Character added to favorites!");
     },
-    removeFromFavorites: async (state, action) => {
-      state.favorites = state.favorites.filter(
-        (item) => item.id !== action.payload.id
+    removeFromFavorites: (state, action) => {
+      const character = action.payload;
+
+      Alert.alert(
+        `Remove ${character.name}`,
+        `Are you sure you want to remove ${character.name} from favorites?`,
+        [
+          {
+            text: "Cancel",
+            style: "cancel",
+          },
+          {
+            text: "Remove",
+            style: "destructive",
+            onPress: () => {
+              state.favorites = state.favorites.filter(
+                (item) => item.id !== action.payload.id
+              );
+            },
+          },
+        ]
       );
-      await removeFavoriteCharacter(state.favorites);
     },
   },
 });
 
-export const { addToFavorites, removeFromFavorites } = favoriteSlice.actions;
-export default favoriteSlice.reducer;
+export const { addToFavorites, removeFromFavorites } = favoritesSlice.actions;
+export default favoritesSlice.reducer;

@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
-import {
-  removeFavoriteCharacter,
-  fetchFavoriteCharacters,
-} from "../services/api";
+import { useSelector, useDispatch } from "react-redux";
+import { removeFromFavorites } from "../redux/features/favorite/favoriteSlice";
 import {
   View,
   Text,
@@ -14,34 +12,22 @@ import {
 import SearchBar from "../components/SearchBar";
 
 const FavoritesScreen = () => {
-  const [favorites, setFavorites] = useState([]);
+  const dispatch = useDispatch();
+  const favorites = useSelector((state) => state.favorites.favorites);
   const [searchQuery, setSearchQuery] = useState("");
-
   useEffect(() => {
-    const fetchFavorites = async () => {
-      const favoriteCharacters = await fetchFavoriteCharacters();
-      setFavorites(favoriteCharacters);
-    };
-    fetchFavorites();
   }, [favorites]);
 
-  const handleRemoveFavorite = async (character) => {
-    try {
-      await removeFavoriteCharacter(character);
-    } catch (error) {
-      console.error(
-        "favorite screen Error removing character from favorites:",
-        error
-      );
-    }
+  const handleRemoveFavorite = (character) => {
+    dispatch(removeFromFavorites(character));
   };
 
-  const filteredFavorites = favorites.filter(
+  const filteredFavorites = favorites ? favorites.filter(
     (character) =>
       character.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       character.status.toLowerCase().includes(searchQuery.toLowerCase()) ||
       character.species.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  ) : [];
 
   const renderCharacter = ({ item }) => (
     <View style={styles.characterCard}>
@@ -68,7 +54,7 @@ const FavoritesScreen = () => {
         onChange={setSearchQuery}
         placeholder="Search in favorite characters"
       />
-      {favorites.length === 0 ? (
+      {favorites && favorites.length === 0 ? (
         <Text style={styles.emptyText}>No favorite characters</Text>
       ) : (
         <FlatList
